@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Calculadora de Matrices</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Operaciones con Matrices</h1>
+
+        <div class="inputs">
+            <label>Filas: <input type="number" id="filas" min="1" value="2"></label>
+            <label>Columnas: <input type="number" id="columnas" min="1" value="2"></label>
+            <button onclick="crearMatriz()">Crear Matriz</button>
+        </div>
+
+        <div id="matriz"></div>
+
+        <div class="acciones">
+            <button onclick="mostrarMatriz()">Mostrar Matriz</button>
+            <button onclick="resolverGauss()">Gauss-Jordan</button>
+        </div>
+
+        <pre id="resultado"></pre>
+    </div>
+
+    <script>
+        function crearMatriz() {
+            const filas = document.getElementById("filas").value;
+            const columnas = document.getElementById("columnas").value;
+            let html = "<table>";
+            for (let i = 0; i < filas; i++) {
+                html += "<tr>";
+                for (let j = 0; j < columnas; j++) {
+                    html += `<td><input type="number" step="any" id="celda-${i}-${j}"></td>`;
+                }
+                html += "</tr>";
+            }
+            html += "</table>";
+            document.getElementById("matriz").innerHTML = html;
+        }
+
+        function leerMatriz() {
+            const filas = document.getElementById("filas").value;
+            const columnas = document.getElementById("columnas").value;
+            let matriz = [];
+            for (let i = 0; i < filas; i++) {
+                let fila = [];
+                for (let j = 0; j < columnas; j++) {
+                    let val = document.getElementById(`celda-${i}-${j}`).value || "0";
+                    fila.push(val);
+                }
+                matriz.push(fila);
+            }
+            return matriz;
+        }
+
+        async function mostrarMatriz() {
+            const matriz = leerMatriz();
+            const res = await fetch("/mostrar", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ matriz })
+            });
+            const data = await res.json();
+            document.getElementById("resultado").innerText = data.ok ? data.resultado : data.error;
+        }
+
+        async function resolverGauss() {
+            const matriz = leerMatriz();
+            const res = await fetch("/gauss", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ matriz })
+            });
+            const data = await res.json();
+            document.getElementById("resultado").innerText = data.ok ? data.resultado : data.error;
+        }
+    </script>
+</body>
+</html>
